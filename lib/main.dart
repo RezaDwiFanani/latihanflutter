@@ -11,266 +11,172 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Hilangkan banner debug
-      title: 'Professional Counter',
+      debugShowCheckedModeBanner: false,
+      title: 'Single Page Counter',
       theme: ThemeData(
-        useMaterial3: true, // Menggunakan Material Design 3 yang lebih modern
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6750A4), // Warna dasar Ungu Modern
-          brightness: Brightness.light,
-        ),
-        scaffoldBackgroundColor: const Color(
-          0xFFF3F4F6,
-        ), // Background abu lembut
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0066FF)),
+        scaffoldBackgroundColor: Colors.white,
       ),
-      home: const HalamanUtama(),
+      home: const SinglePageCounter(),
     );
   }
 }
 
-// --- HALAMAN 1: MENU UTAMA ---
-class HalamanUtama extends StatelessWidget {
-  const HalamanUtama({super.key});
+class SinglePageCounter extends StatefulWidget {
+  const SinglePageCounter({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFE0C3FC), Color(0xFF8EC5FC)], // Gradient Pastel
-          ),
-        ),
-        child: Center(
-          child: Card(
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-            ),
-            margin: const EdgeInsets.symmetric(horizontal: 24),
-            child: Padding(
-              padding: const EdgeInsets.all(32.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.dashboard_customize,
-                    size: 60,
-                    color: Color(0xFF6750A4),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "Dashboard",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Pilih mode penghitung di bawah",
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Tombol Increment
-                  _MenuButton(
-                    label: "Mode Tambah (+)",
-                    icon: Icons.add_circle_outline,
-                    color: Colors.deepPurple,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            const HalamanCounter(mode: CounterMode.increment),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Tombol Decrement
-                  _MenuButton(
-                    label: "Mode Kurang (-)",
-                    icon: Icons.remove_circle_outline,
-                    color: Colors.redAccent,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            const HalamanCounter(mode: CounterMode.decrement),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  State<SinglePageCounter> createState() => _SinglePageCounterState();
 }
 
-// Widget tombol custom agar kodingan lebih rapi
-class _MenuButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _MenuButton({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 55,
-      child: ElevatedButton.icon(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        icon: Icon(icon),
-        label: Text(
-          label,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
-  }
-}
-
-// --- ENUM UNTUK MENENTUKAN MODE ---
-enum CounterMode { increment, decrement }
-
-// --- HALAMAN COUNTER (DIGABUNG AGAR LEBIH EFISIEN) ---
-class HalamanCounter extends StatefulWidget {
-  final CounterMode mode;
-
-  const HalamanCounter({super.key, required this.mode});
-
-  @override
-  State<HalamanCounter> createState() => _HalamanCounterState();
-}
-
-class _HalamanCounterState extends State<HalamanCounter> {
+class _SinglePageCounterState extends State<SinglePageCounter> {
   int _counter = 0;
-  Color _textColor = const Color(0xFF2D3748); // Warna awal Dark Grey
+  Color _bgColor = const Color(0xFF0F172A); // initial deep background
+  Color _numberColor = Colors.white;
 
-  void _updateCounter() {
+  void _increment() {
     setState(() {
-      if (widget.mode == CounterMode.increment) {
-        _counter++;
-      } else {
-        _counter--;
-      }
-      _textColor = _getRandomColor();
+      _counter++;
+      _bgColor = _randomColor();
+      _numberColor = _contrastFor(_bgColor);
     });
   }
 
-  Color _getRandomColor() {
-    // Menghasilkan warna yang lebih kontras & estetik (tidak terlalu pucat)
+  Color _randomColor() {
+    final rnd = Random();
+    // keep colors vibrant but not too bright
     return Color.fromARGB(
       255,
-      Random().nextInt(200), // Max 200 agar tidak terlalu putih
-      Random().nextInt(200),
-      Random().nextInt(200),
+      60 + rnd.nextInt(160),
+      60 + rnd.nextInt(160),
+      60 + rnd.nextInt(160),
     );
+  }
+
+  Color _contrastFor(Color c) {
+    // simple luminance-based contrast
+    return c.computeLuminance() > 0.5 ? Colors.black : Colors.white;
   }
 
   @override
   Widget build(BuildContext context) {
-    final isIncrement = widget.mode == CounterMode.increment;
-
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: Text(
-          isIncrement ? "Increment Mode" : "Decrement Mode",
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
+      // animated background color change
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [_bgColor, _bgColor.withOpacity(0.85)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "TAP BUTTON BELOW",
-              style: TextStyle(
-                color: Colors.grey[400],
-                letterSpacing: 2.0,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Animasi Transisi Angka
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return ScaleTransition(scale: animation, child: child);
-              },
-              child: Text(
-                '$_counter',
-                key: ValueKey<int>(_counter), // Key penting untuk animasi
-                style: TextStyle(
-                  fontSize: 100,
-                  fontWeight: FontWeight.bold,
-                  color: _textColor,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 10.0,
-                      color: _textColor.withOpacity(0.3),
-                      offset: const Offset(0, 5),
+        child: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Title / Logo
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: _numberColor.withOpacity(0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.exposure_plus_1,
+                        color: _numberColor,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Professional Tap Counter',
+                      style: TextStyle(
+                        color: _numberColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.6,
+                      ),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 36),
+
+                // Display card with animated number
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 36),
+                  decoration: BoxDecoration(
+                    color: _numberColor.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.12),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'TAPS',
+                        style: TextStyle(
+                          color: _numberColor.withOpacity(0.85),
+                          fontSize: 12,
+                          letterSpacing: 2,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+                        child: Text(
+                          '$_counter',
+                          key: ValueKey<int>(_counter),
+                          style: TextStyle(
+                            fontSize: 96,
+                            fontWeight: FontWeight.w800,
+                            color: _numberColor,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withOpacity(0.25),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
+
+      // Centered floating '+' button — pressing increments and randomizes color
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Container(
-        margin: const EdgeInsets.only(bottom: 40),
-        height: 80,
-        width: 80,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 28),
         child: FloatingActionButton(
-          onPressed: _updateCounter,
-          elevation: 10,
-          backgroundColor: isIncrement
-              ? const Color(0xFF6750A4)
-              : const Color(0xFFD93025),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
+          onPressed: _increment,
+          backgroundColor: _numberColor, // contrast: button bg = text color
           child: Icon(
-            isIncrement ? Icons.add : Icons.remove,
-            size: 40,
-            color: Colors.white,
+            Icons.add,
+            color: _bgColor, // icon uses current bg color for contrast
+            size: 36,
           ),
+          elevation: 12,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
       ),
     );
